@@ -27,7 +27,7 @@ def callback(event, x, y, flags, params):
         helper.ROI = img[helper.y1+1:helper.y2, helper.x1+1:helper.x2]
         helper.ROI = cv.cvtColor(helper.ROI, cv.cv.CV_BGR2HSV)
         # Might be useful to use a mask instead of none, so we only collect values in a proper range
-        helper.ROI_HSV_HIST = cv.calcHist( [helper.ROI], [0], None, [64], [0,180] )
+        helper.ROI_HSV_HIST = cv.calcHist( [helper.ROI], [0], None, [180], [0,180] )
     if (event == cv.cv.CV_EVENT_MOUSEMOVE):
         if (helper.dragging):
             helper.x2 = x
@@ -45,11 +45,15 @@ while True:
     parameters[1] = frame
     if helper.dragging:
         cv.rectangle(frame, (helper.x1, helper.y1), (helper.x2, helper.y2), (255, 0, 0))
-    cv.imshow("main", frame)
     if (helper.ROI is not None):
         back = cv.calcBackProject([cv.cvtColor(frame, cv.cv.CV_BGR2HSV)], [0], helper.ROI_HSV_HIST, [0,180], 1)
-        back = cv.GaussianBlur(back, (11,11), 0)
-        cv.imshow("BackProjection", np.asarray(back))
+        _, back = cv.threshold(back, 240, 255, cv.THRESH_BINARY)
+        back = cv.GaussianBlur(back, (9,9), 0)
+        cv.imshow("BackProjection", back)
+        crit = ( cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1 )        
+        tbox, window = cv.CamShift(back, (helper.x1, helper.y1, helper.x2, helper.y2), crit)
+        cv.ellipse(frame, tbox, (0, 0, 255), 2)
+    cv.imshow("main", frame)
     if (helper.ROI is not None): cv.imshow("ROI", helper.ROI)
     x = cv.waitKey(1)
     if x == 113: break
