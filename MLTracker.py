@@ -26,7 +26,7 @@ def callback(event, x, y, flags, params):
         helper.dragging = False
         helper.ROI = img[helper.y1+1:helper.y2, helper.x1+1:helper.x2]
         helper.ROI = cv.cvtColor(helper.ROI, cv.cv.CV_BGR2HSV)
-        helper.ROI_HSV_HIST = cv.calcHist( [helper.ROI], [0,1], None, [180,256], [0,180,0,256] )
+        helper.ROI_HSV_HIST = cv.calcHist( [helper.ROI], [0], None, [16], [0,180] )
     if (event == cv.cv.CV_EVENT_MOUSEMOVE):
         if (helper.dragging):
             helper.x2 = x
@@ -45,7 +45,7 @@ while True:
         cv.rectangle(frame, (helper.x1, helper.y1), (helper.x2, helper.y2), (255, 0, 0))
     cv.imshow("main", frame)
     if (helper.ROI is not None):
-        back = cv.calcBackProject([frame], [0,1], helper.ROI_HSV_HIST, [0,180,0,256], 5.0)
+        back = cv.calcBackProject([cv.cvtColor(frame, cv.cv.CV_BGR2HSV)], [0], helper.ROI_HSV_HIST, [0,180], 1)
         cv.imshow("BackProjection", back)
     if (helper.ROI is not None): cv.imshow("ROI", helper.ROI)
     x = cv.waitKey(1)
