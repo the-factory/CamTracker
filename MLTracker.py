@@ -25,6 +25,7 @@ def callback(event, x, y, flags, params):
         helper.y2 = y
         helper.dragging = False
         helper.ROI = img[helper.y1+1:helper.y2, helper.x1+1:helper.x2]
+        helper.ROI = cv.GaussianBlur(helper.ROI, (15,15), 0)
         helper.ROI = cv.cvtColor(helper.ROI, cv.cv.CV_BGR2HSV)
         # Might be useful to use a mask instead of none, so we only collect values in a proper range
         helper.ROI_HSV_HIST = cv.calcHist( [helper.ROI], [0], None, [180], [0,180] )
@@ -47,8 +48,8 @@ while True:
         cv.rectangle(frame, (helper.x1, helper.y1), (helper.x2, helper.y2), (255, 0, 0))
     if (helper.ROI is not None):
         back = cv.calcBackProject([cv.cvtColor(frame, cv.cv.CV_BGR2HSV)], [0], helper.ROI_HSV_HIST, [0,180], 1)
-        _, back = cv.threshold(back, 240, 255, cv.THRESH_BINARY)
-        back = cv.GaussianBlur(back, (9,9), 0)
+        _, back = cv.threshold(back, 100, 255, cv.THRESH_BINARY)
+        back = cv.GaussianBlur(back, (57,57), 0)
         cv.imshow("BackProjection", back)
         crit = ( cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1 )        
         tbox, window = cv.CamShift(back, (helper.x1, helper.y1, helper.x2, helper.y2), crit)
