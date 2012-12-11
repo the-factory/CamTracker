@@ -26,9 +26,7 @@ def callback(event, x, y, flags, params):
         helper.dragging = False
         helper.ROI = img[helper.y1+1:helper.y2, helper.x1+1:helper.x2]
         helper.ROI = cv.GaussianBlur(helper.ROI, (15,15), 0)
-        helper.ROI = cv.cvtColor(helper.ROI, cv.cv.CV_BGR2HSV)
-        # Might be useful to use a mask instead of none, so we only collect values in a proper range
-        helper.ROI_HSV_HIST = cv.calcHist( [helper.ROI], [0], None, [128], [0,180] )
+        #helper.ROI = cv.cvtColor(helper.ROI, cv.cv.CV_BGR2HSV)
     if (event == cv.cv.CV_EVENT_MOUSEMOVE):
         if (helper.dragging):
             helper.x2 = x
@@ -48,13 +46,8 @@ while True:
         cv.rectangle(frame, (helper.x1, helper.y1), (helper.x2, helper.y2), (255, 0, 0))
     if (helper.ROI is not None):
         cv.imshow("ROI", helper.ROI)
-        back = cv.calcBackProject([cv.cvtColor(frame, cv.cv.CV_BGR2HSV)], [0], helper.ROI_HSV_HIST, [0,180], 1)
-        _, back = cv.threshold(back, 100, 255, cv.THRESH_BINARY)
-        back = cv.GaussianBlur(back, (27,27), 0)
-        cv.imshow("BackProjection", back)
-        crit = ( cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1 )        
-        tbox, window = cv.CamShift(back, (helper.x1, helper.y1, helper.x2, helper.y2), crit)
-        cv.ellipse(frame, tbox, (0, 0, 255), 2)
+        match = cv.matchTemplate(frame, helper.ROI, cv.cv.CV_TM_CCORR)
+        cv.imshow("match", match)
     cv.imshow("main", frame)
     x = cv.waitKey(1)
     if x == 113: break
